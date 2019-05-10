@@ -22,6 +22,8 @@ public class CameraCtrl : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (target == null) return;
+
         Vector3 newPos = target.position + offset;
 
         if (mode == Mode.Feedback)
