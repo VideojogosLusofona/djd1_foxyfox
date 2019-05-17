@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Fox : MonoBehaviour
+public class Fox : Character
 {
-    [SerializeField] float          moveSpeed = 50.0f;
+    [Header("Fox")]
     [SerializeField] float          jumpSpeed = 250.0f;
     [SerializeField] float          maxJumpTime = 0.15f;
     [SerializeField] float          maxGravityScale = 3.0f;
     [SerializeField] ParticleSystem walkDust;
-    [SerializeField] int            maxHP = 3;
-    [SerializeField] float          invulnerabilityDuration = 1.0f;
     [SerializeField] float          knockbackSpeed = 150.0f;
     [SerializeField] float          knockbackDuration = 0.5f;
     [SerializeField] Transform      damageSensor;
@@ -18,14 +16,10 @@ public class Fox : MonoBehaviour
     [SerializeField] Collider2D groundCollider;
     [SerializeField] Collider2D airCollider;
 
-    Rigidbody2D     rigidBody;
     Animator        animator;
-    SpriteRenderer  sprite;
     float           timeOfJump;
     float           hAxis;
     bool            jumpPressed;
-    int             currentHP;
-    float           invulnerabilityTimer;
     float           knockbackTimer;
 
     bool isOnGround
@@ -38,39 +32,19 @@ public class Fox : MonoBehaviour
         }
     }
 
-    bool isInvulnerable
+    protected override void Start()
     {
-        get
-        {
-            if (invulnerabilityTimer > 0.0f) return true;
+        base.Start();
 
-            return false;
-        }
-        set
-        {
-            if (value)
-            {
-                invulnerabilityTimer = invulnerabilityDuration;
-            }
-            else
-            {
-                invulnerabilityTimer = 0.0f;
-            }
-        }
-    }
-
-    void Start()
-    {
-        rigidBody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        sprite = GetComponent<SpriteRenderer>();
 
         timeOfJump = -1000.0f;
-        currentHP = maxHP;
     }
 
     void FixedUpdate()
     {
+        if (currentHP <= 0) return;
+
         bool grounded = isOnGround;
 
         if (knockbackTimer <= 0.0f)
@@ -113,21 +87,23 @@ public class Fox : MonoBehaviour
         groundCollider.enabled = grounded;
         airCollider.enabled = !grounded;
 
-        Collider2D collider = Physics2D.OverlapCircle(damageSensor.position, 2.0f, LayerMask.GetMask("Enemy"));
+        Collider2D collider = Physics2D.OverlapCircle(damageSensor.position, 2.0f, LayerMask.GetMask("Character"));
         if (collider != null)
         {
-            Opossum opossum = collider.GetComponent<Opossum>();
-            if (opossum)
+            Character character = collider.GetComponent<Character>();
+            if ((character) && (character.faction != faction))
             {
-                opossum.DealDamage(1, Vector3.up);
+                character.DealDamage(1, Vector3.up);
 
                 rigidBody.velocity = Vector3.up * jumpSpeed * 0.8f;
             }
         }
     }
 
-    private void Update()
+    protected override void Update()
     {
+        if (currentHP <= 0) return;
+
         hAxis = Input.GetAxis("Horizontal");
         jumpPressed = Input.GetButton("Jump");
 
@@ -151,17 +127,7 @@ public class Fox : MonoBehaviour
         var emission = walkDust.emission;
         emission.enabled = isOnGround;
 
-        if (invulnerabilityTimer > 0.0f)
-        {
-            invulnerabilityTimer -= Time.deltaTime;
-
-            sprite.enabled = (Mathf.FloorToInt(invulnerabilityTimer * 10.0f) % 2) == 0;
-
-            if (invulnerabilityTimer <= 0.0f)
-            {
-                sprite.enabled = true;
-            }
-        }
+        base.Update();
 
         if (knockbackTimer > 0.0f)
         {
@@ -169,21 +135,42 @@ public class Fox : MonoBehaviour
         }
     }
 
-    public void DealDamage(int nDamage, Vector2 hitDirection)
+    protected override void OnHit(Vector2 hitDirection)
     {
-        if (isInvulnerable) return;
-
-        currentHP = currentHP - nDamage;
-
-        if (currentHP <= 0)
-        {
-            Destroy(gameObject);
-        }
-
-        isInvulnerable = true;
-
         knockbackTimer = knockbackDuration;
         rigidBody.velocity = hitDirection * knockbackSpeed;
+
+        animator.SetTrigger("Hit");
+    }
+
+    protected override void OnDie()
+    {
+        StartCoroutine(OnDieCR());
+    }
+
+    IEnumerator OnDieCR()
+    {
+        rigidBody.isKinematic = true;
+        rigidBody.velocity = Vector2.zero;
+
+        sprite.color = new Color(0.5f, 1.0f, 1.0f, 0.5f);
+        animator.SetTrigger("Dead");
+
+        float elapsedTime = 0.0f;
+        while (elapsedTime < 2.0f)
+        {
+            Vector3 currentPos = transform.position;
+            currentPos.y = currentPos.y + 25 * Time.fixedDeltaTime;
+            transform.position = currentPos;
+
+            yield return new WaitForFixedUpdate();
+
+            elapsedTime += Time.fixedDeltaTime;
+        }
+
+        Destroy(gameObject);
+
+        GameMng.instance.LoseLife();
     }
 
     private void OnDrawGizmosSelected()
