@@ -2,42 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Opossum : MonoBehaviour
+public class Opossum : Character
 {
-    [SerializeField] float      moveSpeed;
+    [Header("Opossum")]
     [SerializeField] Transform  groundSensor;
     [SerializeField] Transform  wallSensor;
     [SerializeField] Collider2D damageCollider;
-    [SerializeField] int        maxHP = 3;
-    [SerializeField] float      invulnerableDuration = 1.0f;
     [SerializeField] GameObject deathPrefab;
-
-    Rigidbody2D     rigidBody;
-    SpriteRenderer  sprite;
-    int             currentHP;
-    float           invulnerabilityTimer;
-
-    bool isInvulnerable
-    {
-        get
-        {
-            if (invulnerabilityTimer > 0.0f)
-            {
-                return true;
-            }
-
-            return false;
-        }
-    }
-
-    void Start()
-    {
-        rigidBody = GetComponent<Rigidbody2D>();
-        sprite = GetComponent<SpriteRenderer>();
-
-        currentHP = maxHP;
-    }
-
+    
     void FixedUpdate()
     {
         Vector3 currentVelocity = rigidBody.velocity;
@@ -65,7 +37,7 @@ public class Opossum : MonoBehaviour
         {
             ContactFilter2D filter = new ContactFilter2D();
             filter.ClearLayerMask();
-            filter.SetLayerMask(LayerMask.GetMask("Player"));
+            filter.SetLayerMask(LayerMask.GetMask("Character"));
 
             Collider2D[] results = new Collider2D[8];
 
@@ -77,13 +49,13 @@ public class Opossum : MonoBehaviour
                 {
                     if (collider)
                     {
-                        Fox fox = collider.GetComponent<Fox>();
-                        if (fox)
+                        Character character = collider.GetComponent<Character>();
+                        if ((character) && (character.faction != faction))
                         {
-                            Vector3 hitDirection = (fox.transform.position - transform.position).normalized;
+                            Vector3 hitDirection = (character.transform.position - transform.position).normalized;
                             hitDirection.y = 1.0f;
 
-                            fox.DealDamage(1, hitDirection);
+                            character.DealDamage(1, hitDirection);
                         }
                     }
                 }
@@ -91,37 +63,16 @@ public class Opossum : MonoBehaviour
         }
     }
 
-    private void Update()
+    protected override void SetInvulnerableEffect(bool b)
     {
-        if (invulnerabilityTimer > 0.0f)
-        {
-            invulnerabilityTimer -= Time.deltaTime;
-
-            if (invulnerabilityTimer > 0.0f)
-            {
-                if ((Mathf.FloorToInt(invulnerabilityTimer * 10.0f) % 2) == 0) sprite.color = Color.red;
-                else sprite.color = Color.white;
-            }
-            else
-            {
-                sprite.color = Color.white;
-            }
-        }
+        if (b) sprite.color = Color.red;
+        else sprite.color = Color.white;
     }
 
-    public void DealDamage(int damagePoints, Vector2 hitDirection)
+    protected override void OnDie()
     {
-        if (isInvulnerable) return;
-
-        currentHP = currentHP - damagePoints;
-
-        if (currentHP <= 0)
-        {
-            Destroy(gameObject);
-            Instantiate(deathPrefab, transform.position, transform.rotation);
-        }
-
-        invulnerabilityTimer = invulnerableDuration;
+        Instantiate(deathPrefab, transform.position, transform.rotation);
+        Destroy(gameObject);
     }
 
     private void OnDrawGizmos()

@@ -2,26 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Fox : MonoBehaviour
+public class Fox : Character
 {
-    public float        moveSpeed = 50.0f;
+    [Header("Fox")]
     public float        jumpVelocity = 250.0f;
     public float        jumpTime = 0.15f;
     public Collider2D   groundCollider;
     public Collider2D   airCollider;
-    public int          maxHP = 3;
-    public float        invulnerableDuration = 1.0f;
     public float        knockbackSpeed = 250.0f;
     public Transform    damageSensor;
 
-    Rigidbody2D     rigidBody;
-    Animator        animator;
-    SpriteRenderer  sprite;
     float           timeOfJump;
     float           hAxis;
     bool            isJumpPressed;
-    int             currentHP;
-    float           invulnerabilityTimer;
     float           knockbackTimer;
 
     bool isOnGround
@@ -36,31 +29,17 @@ public class Fox : MonoBehaviour
         }
     }
 
-    bool isInvulnerable
+    protected override void Start()
     {
-        get
-        {
-            if (invulnerabilityTimer > 0.0f)
-            {
-                return true;
-            }
-
-            return false;
-        }
-    }
-
-    void Start()
-    {
-        rigidBody = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        sprite = GetComponent<SpriteRenderer>();
+        base.Start();
 
         timeOfJump = -1000.0f;
-        currentHP = maxHP;
     }
 
     void FixedUpdate()
     {
+        if (currentHP <= 0) return;
+
         if (knockbackTimer <= 0.0f)
         {
             Vector2 currentVelocity = rigidBody.velocity;
@@ -99,10 +78,10 @@ public class Fox : MonoBehaviour
         Collider2D collider = Physics2D.OverlapCircle(damageSensor.position, 2.0f, LayerMask.GetMask("Enemy"));
         if (collider != null)
         {
-            Opossum opossum = collider.GetComponent<Opossum>();
-            if (opossum)
+            Character otherCharacter = collider.GetComponent<Character>();
+            if ((otherCharacter) && (otherCharacter.faction != faction))
             {
-                opossum.DealDamage(1, Vector3.up);
+                otherCharacter.DealDamage(1, Vector3.up);
 
                 rigidBody.velocity = Vector3.up * jumpVelocity * 0.5f;
             }
@@ -110,11 +89,13 @@ public class Fox : MonoBehaviour
 
     }
 
-    private void Update()
-    { 
+    protected override void Update()
+    {
+        if (currentHP <= 0) return;
+
         hAxis = Input.GetAxis("Horizontal");
         isJumpPressed = Input.GetButton("Jump");
-        
+
         Vector2 currentVelocity = rigidBody.velocity;
 
         if ((hAxis < 0.0f) && (transform.right.x > 0.0f))
@@ -130,40 +111,12 @@ public class Fox : MonoBehaviour
         animator.SetFloat("VelocityY", currentVelocity.y);
         animator.SetBool("isOnGround", isOnGround);
 
-        if (invulnerabilityTimer > 0.0f)
-        {
-            invulnerabilityTimer -= Time.deltaTime;
-
-            if (invulnerabilityTimer > 0.0f)
-            {
-                sprite.enabled = (Mathf.FloorToInt(invulnerabilityTimer * 10.0f) % 2) == 0;
-            }
-            else
-            {
-                sprite.enabled = true;
-            }
-        }
+        base.Update();
 
         if (knockbackTimer > 0.0f)
         {
             knockbackTimer -= Time.deltaTime;
         }
-    }
-
-    public void DealDamage(int damagePoints, Vector2 hitDirection)
-    {
-        if (isInvulnerable) return;
-
-        currentHP = currentHP - damagePoints;
-
-        if (currentHP <= 0)
-        {
-            Destroy(gameObject);
-        }
-
-        invulnerabilityTimer = invulnerableDuration;
-        knockbackTimer = 0.5f;
-        rigidBody.velocity = knockbackSpeed * hitDirection;
     }
 
     private void OnDrawGizmos()
@@ -176,5 +129,41 @@ public class Fox : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawSphere(damageSensor.position, 2.0f);
         }
-    }    
+    }
+
+    protected override void OnHit(Vector2 hitDirection)
+    {
+        knockbackTimer = 0.5f;
+        rigidBody.velocity = knockbackSpeed * hitDirection;
+    }
+
+    protected override void OnDie()
+    {
+        sprite.color = new Color(0.5f, 1.0f, 1.0f, 0.5f);
+        rigidBody.velocity = Vector2.zero;
+        rigidBody.isKinematic = true;
+        animator.SetTrigger("Dead");
+
+        StartCoroutine(OnDieCR());
+    }
+
+    IEnumerator OnDieCR()
+    {
+        float deadTimer = 2.0f;
+
+        while (deadTimer > 0.0f)
+        {
+            Vector3 currentPos = transform.position;
+            currentPos.y = currentPos.y + 25.0f * Time.deltaTime;
+            transform.position = currentPos;
+
+            yield return null;
+
+            deadTimer -= Time.deltaTime;
+        }
+
+        Destroy(gameObject);
+
+        GameMng.instance.LoseLife();
+    }
 }
