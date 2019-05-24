@@ -4749,8 +4749,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77b223e699b6b834491a09198b727f0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  faction: 0
   moveSpeed: 150
-  maxHP: 1
+  maxHP: 3
   invulnerableDuration: 1
   jumpVelocity: 300
   jumpTime: 0.25

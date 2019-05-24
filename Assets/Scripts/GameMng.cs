@@ -1,16 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class GameMng : MonoBehaviour
 {
     [SerializeField] int                maxLives;
-    [SerializeField] GameObject         playerPrefab;
-    [SerializeField] Transform          spawnPoint;
-    [SerializeField] CameraCtrl         cameraCtrl;
 
-    int currentLives;
+    int         currentLives;
+    int         currentScore;
+    int         highScore = 0;
 
     public static GameMng instance;
 
@@ -23,41 +26,59 @@ public class GameMng : MonoBehaviour
         }
 
         instance = this;
+
+        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
-        currentLives = maxLives;
-        IngameUI.instance.UpdateLivesDisplay();
+        ResetGame();
+    }
 
-        Respawn();
+    private void Update()
+    {
+#if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            EditorApplication.isPaused = true;
+        }
+#endif
     }
 
     public void LoseLife()
     {
         currentLives--;
-        IngameUI.instance.UpdateLivesDisplay();
-
-        if (currentLives <= 0)
-        {
-            // Fazemos cenas
-        }
-        else
-        {
-            Respawn();
-        }
-    }
-
-    void Respawn()
-    { 
-        // Respawn do jogador
-        GameObject playerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
-
-        cameraCtrl.target = playerObj.transform;
     }
 
     public int GetCurrentLives()
     {
         return currentLives;
+    }
+
+    public void ResetGame()
+    {
+        currentScore = 0;
+        currentLives = maxLives;
+    }
+
+    public void AddScore(int s)
+    {
+        currentScore += s;
+
+        IngameUI.instance.UpdateScoreDisplay(currentScore);
+        UpdateHighscore();
+    }
+
+    public void UpdateHighscore()
+    {
+        if (highScore < currentScore)
+        {
+            highScore = currentScore;
+        }
+    }
+
+    public int GetHighscore()
+    {
+        return highScore;
     }
 }

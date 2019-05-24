@@ -75,7 +75,7 @@ public class Fox : Character
         groundCollider.enabled = isOnGround;
         airCollider.enabled = !isOnGround;
 
-        Collider2D collider = Physics2D.OverlapCircle(damageSensor.position, 2.0f, LayerMask.GetMask("Enemy"));
+        Collider2D collider = Physics2D.OverlapCircle(damageSensor.position, 2.0f, LayerMask.GetMask("Character"));
         if (collider != null)
         {
             Character otherCharacter = collider.GetComponent<Character>();
@@ -164,6 +164,6 @@ public class Fox : Character
 
         Destroy(gameObject);
 
-        GameMng.instance.LoseLife();
+        LevelManager.instance.LoseLife();
     }
 }
