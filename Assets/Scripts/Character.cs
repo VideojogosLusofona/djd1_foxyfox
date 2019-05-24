@@ -18,6 +18,7 @@ public class Character : MonoBehaviour
     protected SpriteRenderer  sprite;
     protected int             currentHP;
     protected float           invulnerabilityTimer;
+    protected List<string>    inventory;
 
     protected bool isInvulnerable
     {
@@ -44,6 +45,7 @@ public class Character : MonoBehaviour
     {
         rigidBody = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
+        inventory = new List<string>();
 
         currentHP = maxHP;
     }
@@ -98,5 +100,29 @@ public class Character : MonoBehaviour
         {
             Instantiate(deathPrefab, transform.position, transform.rotation);
         }
+    }
+
+    public void AddToInventory(string itemName)
+    {
+        if (inventory.IndexOf(itemName) == -1)
+        {
+            inventory.Add(itemName);
+        }
+    }
+
+    public void RemoveFromInventory(string itemName)
+    {
+        int index = inventory.IndexOf(itemName);
+        if (index != -1)
+        {
+            inventory.RemoveAt(index);
+        }
+    }
+
+    public bool HasItem(string itemName)
+    {
+        int index = inventory.IndexOf(itemName);
+
+        return (index != -1);
     }
 }

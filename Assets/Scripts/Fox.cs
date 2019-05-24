@@ -170,7 +170,7 @@ public class Fox : Character
 
         Destroy(gameObject);
 
-        GameMng.instance.LoseLife();
+        LevelManager.instance.LoseLife();
     }
 
     private void OnDrawGizmosSelected()
