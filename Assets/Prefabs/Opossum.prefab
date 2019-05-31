@@ -113,6 +113,8 @@ MonoBehaviour:
   moveSpeed: 75
   maxHP: 3
   invulnerableDuration: 1
+  hurtSound: {fileID: 8300000, guid: 6fa959e49bf076c4aa843015a7bf15a1, type: 3}
+  deathSound: {fileID: 8300000, guid: 63a23da2c1511bf4caf1b168c03638d4, type: 3}
   groundSensor: {fileID: 652027053982066651}
   wallSensor: {fileID: 652027054838768641}
   damageCollider: {fileID: 652027055226843349}

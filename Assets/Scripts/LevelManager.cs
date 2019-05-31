@@ -9,9 +9,11 @@ public class LevelManager : MonoBehaviour
     [SerializeField] GameObject playerPrefab;
     [SerializeField] Transform spawnPoint;
     [SerializeField] CameraCtrl cameraCtrl;
+    [SerializeField] Animator   fadeAnimator;
 
     float       currentTime;
     GameObject  playerCharacter;
+    string      sceneToLoad = "";
 
     public static LevelManager instance;
 
@@ -70,12 +72,18 @@ public class LevelManager : MonoBehaviour
 
         if (GameMng.instance.GetCurrentLives() <= 0)
         {
-            SceneManager.LoadScene("GameOver");
+            sceneToLoad = "GameOver";
+            fadeAnimator.SetBool("Fade", true);
         }
         else
         {
             Respawn();
         }
+    }
+
+    public void ChangeScene()
+    {
+        SceneManager.LoadScene(sceneToLoad);
     }
 
 }

@@ -7,10 +7,12 @@ public class Character : MonoBehaviour
     public enum Faction { Player, Enemy };
 
     [Header("Character")]
-                     public    Faction  faction;
-    [SerializeField] protected float    moveSpeed = 50.0f;
-    [SerializeField] protected int      maxHP = 3;
-    [SerializeField] protected float    invulnerableDuration = 1.0f;
+                     public    Faction      faction;
+    [SerializeField] protected float        moveSpeed = 50.0f;
+    [SerializeField] protected int          maxHP = 3;
+    [SerializeField] protected float        invulnerableDuration = 1.0f;
+    [SerializeField] protected AudioClip    hurtSound;
+    [SerializeField] protected AudioClip    deathSound;
 
     protected Rigidbody2D     rigidBody;
     protected SpriteRenderer  sprite;
@@ -70,10 +72,14 @@ public class Character : MonoBehaviour
 
         if (currentHP <= 0)
         {
+            SoundManager.PlaySound(deathSound, 1.0f, Random.Range(0.75f, 1.25f));
+
             OnDie();
         }
         else
         {
+            SoundManager.PlaySound(hurtSound, 1.0f, Random.Range(0.75f, 1.25f));
+
             invulnerabilityTimer = invulnerableDuration;
 
             OnHit(hitDirection);

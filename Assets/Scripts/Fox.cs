@@ -11,6 +11,7 @@ public class Fox : Character
     public Collider2D   airCollider;
     public float        knockbackSpeed = 250.0f;
     public Transform    damageSensor;
+    public AudioClip    jumpSound;
 
     float           timeOfJump;
     float           hAxis;
@@ -53,6 +54,8 @@ public class Fox : Character
                     rigidBody.gravityScale = 1.0f;
                     currentVelocity.y = jumpVelocity;
                     timeOfJump = Time.time;
+
+                    SoundManager.PlaySound(jumpSound, 1.0f, Random.Range(0.75f, 1.25f));
                 }
                 else if ((Time.time - timeOfJump) < jumpTime)
                 {
