@@ -13,6 +13,8 @@ public class Character : MonoBehaviour
     [SerializeField] protected int          maxHP = 3;
     [SerializeField] protected float        invulnerabilityDuration = 1.0f;
     [SerializeField] protected GameObject   deathPrefab;
+    [SerializeField] protected AudioClip    hurtSound;
+    [SerializeField] protected AudioClip    dieSound;
 
     protected Rigidbody2D     rigidBody;
     protected SpriteRenderer  sprite;
@@ -78,10 +80,14 @@ public class Character : MonoBehaviour
 
         if (currentHP <= 0)
         {
+            SoundManager.PlaySound(dieSound, 1.0f, Random.Range(0.75f, 1.25f));
+
             OnDie();
         }
         else
         {
+            SoundManager.PlaySound(hurtSound, 1.0f, Random.Range(0.75f, 1.25f));
+
             isInvulnerable = true;
 
             OnHit(hitDirection);

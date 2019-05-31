@@ -113,11 +113,13 @@ MonoBehaviour:
   moveSpeed: 75
   maxHP: 1
   invulnerabilityDuration: 1
+  deathPrefab: {fileID: 1322092487989412717, guid: 6b748162d11200e4d810d116c2e42ea0,
+    type: 3}
+  hurtSound: {fileID: 8300000, guid: def67cb9012801e4eb5e579064048d9e, type: 3}
+  dieSound: {fileID: 8300000, guid: c44a4faf11a09014f918cbd4eaafc03a, type: 3}
   groundSensor: {fileID: 4889415877253890901}
   wallSensor: {fileID: 4889415876090327028}
   damageSensor: {fileID: 4889415877695398472}
-  deathPrefab: {fileID: 1322092487989412717, guid: 6b748162d11200e4d810d116c2e42ea0,
-    type: 3}
 --- !u!212 &4889415877695398516
 SpriteRenderer:
   m_ObjectHideFlags: 0

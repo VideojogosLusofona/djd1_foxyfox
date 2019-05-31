@@ -12,6 +12,7 @@ public class Fox : Character
     [SerializeField] float          knockbackSpeed = 150.0f;
     [SerializeField] float          knockbackDuration = 0.5f;
     [SerializeField] Transform      damageSensor;
+    [SerializeField] AudioClip      jumpSound;
 
     [SerializeField] Collider2D groundCollider;
     [SerializeField] Collider2D airCollider;
@@ -60,6 +61,8 @@ public class Fox : Character
                     currentVelocity.y = jumpSpeed;
                     timeOfJump = Time.time;
                     rigidBody.gravityScale = 1.0f;
+
+                    SoundManager.PlaySound(jumpSound, 0.25f, Random.Range(0.75f, 1.25f));
                 }
                 else
                 {
